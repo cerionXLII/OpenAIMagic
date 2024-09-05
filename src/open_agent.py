@@ -1,6 +1,7 @@
 from openai import OpenAI
 from openai import OpenAIError
 import pyaudio
+import base64
 
 class OpenAgent:
     def __init__(self, api_key):
@@ -14,7 +15,7 @@ class OpenAgent:
     def chat(self, text):
         try:
             response = self.client.chat.completions.create(
-                model=self.model_name ,
+                model=self.chat_model_name ,
                 messages=[{"role": "user", "content": f'{text}'}]
             )
             return response.choices[0].message.content
@@ -74,6 +75,51 @@ class OpenAgent:
         except OpenAIError as e:
             print(e)
             
-            
+    def translate_text(self, text, target_language='swedish'):
+        try:
+            response = self.client.chat.completions.create(
+                model=self.chat_model_name,
+                messages=[
+                    {"role": "system", "content": f'Your goal is to translate text from one language to another. It should be grammatically correct with as good translation as possible. Translate the following text to {target_language}.'},
+                    {"role": "user", "content": f'{text}'}
+                    ]
+            )
+            return response.choices[0].message.content
+        except OpenAIError as e:
+            print(e)
+            return None
+        
+
+    def encode_image(self, image_path):
+        with open(image_path, "rb") as image_file:
+            return base64.b64encode(image_file.read()).decode('utf-8')
+        
+    def caption_image(self, image_path, target_language='swedish'):
+        # Getting the base64 string
+        base64_image = self.encode_image(image_path)
+        try:
+            response = self.client.chat.completions.create(
+                model=self.chat_model_name,
+                messages=[
+                    {"role": "system", "content": f'Your goal is to view an image and create a descriptive caption of it. It should be between 1-3 sentenses long. It should be grammatically correct and using the following language: {target_language}.'},
+                    {"role": "user", "content": [
+                        {
+                            'type': 'text',
+                            'text': 'Create a caption of the image.'
+                        },
+                        {
+                            'type': 'image_url',
+                            'image_url': {
+                                 "url": f"data:image/jpeg;base64,{base64_image}"
+                                }
+                        },
+                        ]}
+                ]                   
+            )
+            return response.choices[0].message.content
+        except OpenAIError as e:
+            print(e)
+            return None
+
         
         
