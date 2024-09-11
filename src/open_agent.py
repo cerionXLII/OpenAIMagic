@@ -2,6 +2,7 @@ from openai import OpenAI
 from openai import OpenAIError
 import pyaudio
 import base64
+import requests
 
 class OpenAgent:
     def __init__(self, api_key):
@@ -10,6 +11,7 @@ class OpenAgent:
         self.chat_model_name = 'gpt-4o-mini'
         self.transcribe_model_name = 'whisper-1'
         self.text_to_speach_model_name = 'tts-1' # tts-1, tts-1-hd (high definition)
+        self.image_generation_model_name = 'dall-e-3'
 
     # Chat with the model
     def chat(self, text):
@@ -120,6 +122,24 @@ class OpenAgent:
         except OpenAIError as e:
             print(e)
             return None
+
+    def generate_image(self, text, target_file_name):
+        try:
+            response = self.client.images.generate(
+                model=self.image_generation_model_name,
+                prompt=text,
+                size="1024x1024",
+                quality="standard",
+                n=1,
+                )
+            image_url = response.data[0].url
+            response = requests.get(image_url)
+            with open(target_file_name, 'wb') as f:
+                f.write(response.content)
+        except OpenAIError as e:
+            print(e)
+            return None
+
 
         
         
