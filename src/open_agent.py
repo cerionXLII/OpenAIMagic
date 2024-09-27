@@ -14,12 +14,27 @@ class OpenAgent:
         self.image_generation_model_name = 'dall-e-3'
 
     # Chat with the model
-    def chat(self, text):
+    def chat(self, text, instructions=None, response_format=None):
         try:
-            response = self.client.chat.completions.create(
-                model=self.chat_model_name ,
-                messages=[{"role": "user", "content": f'{text}'}]
-            )
+            messages = []
+            if instructions:
+                messages.append({"role": "system", "content": instructions})
+            
+            messages.append({"role": "user", "content": text})
+
+            if response_format is None:                
+                response = self.client.chat.completions.create(
+                    model=self.chat_model_name,
+                    messages=messages)
+            else:
+                response = self.client.beta.chat.completions.parse(
+                    model=self.chat_model_name,
+                    messages=messages,
+                    response_format=response_format)
+            # response = self.client.chat.completions.create(
+            #     model=self.chat_model_name ,
+            #     messages=[{"role": "user", "content": f'{text}'}]
+            # )
             return response.choices[0].message.content
         except OpenAIError as e:
             print(e)
