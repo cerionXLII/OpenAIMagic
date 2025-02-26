@@ -154,6 +154,43 @@ class OpenAgent:
         except OpenAIError as e:
             print(e)
             return None
+    
+    def classify_images(self, image_binaries, prompt, response_format=None):
+        """
+        Classifies images by sending them along with a prompt to the chat model.
+        """
+        try:
+            # Initialize content with the prompt as a text message.
+            content = [{'type': 'text', 'text': prompt}]
+
+            # Append each image to the content as an image URL.
+            for image in image_binaries:
+                content.append({
+                    'type': 'image_url',
+                    'image_url': {
+                        'url': f"data:image/jpeg;base64,{image}"
+                    }
+                })
+
+            messages =[{"role": "user", "content": content}]
+            
+            # Create the chat completion with the formatted messages.
+            if response_format is None:                
+                response = self.client.chat.completions.create(
+                    model=self.chat_model_name,
+                    messages=messages)
+            else:
+                response = self.client.beta.chat.completions.parse(
+                    model=self.chat_model_name,
+                    messages=messages,
+                    response_format=response_format)
+
+            return response.choices[0].message.content
+
+        except OpenAIError as e:
+            print(e)
+            return None
+
 
 
         
