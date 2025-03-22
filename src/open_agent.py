@@ -190,6 +190,15 @@ class OpenAgent:
         except OpenAIError as e:
             print(e)
             return None
+        
+    def chat_with_code_interpreter(self, prompt):
+        assistant = self.client.beta.assistants.create(
+            instructions="You are a personal math tutor. When asked a math question, write and run code to answer the question.",
+            model=self.chat_model_name,
+            tools=[{"type": "code_interpreter"}],
+        )
+        thread = self.client.beta.threads.create()
+
 
 
 
