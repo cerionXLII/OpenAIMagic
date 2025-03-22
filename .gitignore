@@ -167,3 +167,6 @@ src/config*
 
 #Data
 data/
+
+#Downloaded data
+src/downloads/
