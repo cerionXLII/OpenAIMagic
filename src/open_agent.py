@@ -12,6 +12,7 @@ class OpenAgent:
         self.transcribe_model_name = 'whisper-1'
         self.text_to_speach_model_name = 'tts-1' # tts-1, tts-1-hd (high definition)
         self.image_generation_model_name = 'dall-e-3'
+        self.embedding_model_name = 'text-embedding-3-small' #https://platform.openai.com/docs/guides/embeddings
 
     # Chat with the model
     def chat(self, text, instructions=None, response_format=None):
@@ -198,6 +199,20 @@ class OpenAgent:
             tools=[{"type": "code_interpreter"}],
         )
         thread = self.client.beta.threads.create()
+
+    def get_embedding(self, text):
+        try:
+            text = text.replace("\n", " ")
+            response = self.client.embeddings.create(
+                model=self.embedding_model_name,
+                input=[text]
+            )
+            return response.data[0].embedding
+        except Exception as e:
+            print(e)
+            return None
+
+
 
 
 
